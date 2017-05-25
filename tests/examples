@@ -1,0 +1,320 @@
+help
+config some_file
+mode some_mode
+local somehost
+remote somehost
+remote somehost someport
+remote host someport someproto
+remote-random-hostname
+proto-force someproto
+remote-random
+proto someproto
+connect-retry 10
+connect-retry 10 5
+connect-retry-max 10
+show-proxy-settings
+http-proxy server port
+http-proxy server port authfile
+http-proxy server port authfile someathmethod
+http-proxy-option sometype
+http-proxy-option sometype someparm
+socks-proxy someserver
+socks-proxy someserver someport
+socks-proxy someserver someport someauthfile
+resolv-retry 10
+float
+ipchange somecmd
+port someport
+lport somelport
+rport somerport
+bind
+bind ipv6only
+nobind
+dev tunX
+dev-type somedevicetype
+topology somemode
+dev-node somenode
+lladdr someaddress
+iproute somecmd
+ifconfig somel somern
+ifconfig-noexec
+ifconfig-nowarn
+route network_or_ip
+route network_or_ip somenetmask
+route network_or_ip somenetmask somegateway
+route network_or_ip somenetmask somegateway somemetric
+route-gateway gateway
+route-metric 10
+route-delay
+route-delay 10
+route-delay 10 5
+route-up somecmd
+route-pre-down somecmd
+route-noexec
+route-nopull
+allow-pull-fqdn
+client-nat snat somenetwork somenetmask somealias
+redirect-gateway flag1 flag2
+link-mtu 10
+redirect-private
+redirect-private someflags
+tun-mtu 10
+tun-mtu-extra 10
+mtu-disc sometype
+mtu-test
+fragment 10
+mssfix 10
+sndbuf 10
+rcvbuf 10
+mark somevalue
+socket-flags flag1 flag2
+txqueuelen 10
+shaper 10
+inactive 10
+inactive 10 20
+ping 10
+ping-exit 10
+ping-restart 10
+keepalive someinterval sometimeout
+ping-timer-rem
+persist-tun
+persist-key
+persist-local-ip
+persist-remote-ip
+mlock
+up cmd
+up-delay
+down cmd
+down-pre
+up-restart
+setenv somename somevalue
+setenv-safe somename somevalue
+ignore-unknown-option opt1 opt2 opt3
+script-security somelevel
+disable-occ
+user someuser
+group somegroup
+cd somedir
+chroot somedir
+setcon somecontext
+daemon
+daemon someprog
+syslog
+syslog someprog
+errors-to-stderr
+passtos
+inetd
+inetd wait
+inetd wait someprog
+log somefile
+log-append somefile
+suppress-timestamps
+machine-readable-output
+writepid file
+nice 10
+fast-io
+multihome
+echo parm1 parm2
+remap-usr1 somesignal
+verb 10
+status somefile
+status somefile 10
+status-version
+status-version 1
+mute 10
+compress
+compress somealgo
+comp-lzo
+comp-lzo no
+comp-noadapt
+management someip someport
+management someip someport somefile
+management-client
+management-query-passwords
+management-query-proxy
+management-query-remote
+management-external-key
+management-external-cert certificate-hint
+management-forget-disconnect
+management-hold
+management-signal
+management-log-cache 10
+management-up-down
+management-client-auth
+management-client-pf
+management-client-user someuser
+management-client-group somegroup
+plugin somepathname
+plugin somepathname someinitstring
+keying-material-exporter somelabel somelen
+server somenetwork somenetmask
+server somenetwork somenetmask nopool
+server-bridge somegateway somenetmask somepool_start_ip somepool_end_ip
+server-bridge nogw
+push option
+push-reset
+push-remove someopt
+push-peer-info
+disable
+ifconfig-pool start_ip end_ip
+ifconfig-pool start_ip end_ip somenetmask
+ifconfig-pool-persist somefile
+ifconfig-pool-persist somefile 10
+ifconfig-pool-linear
+ifconfig-push somelocal some_remote_netmask
+ifconfig-push somelocal some_remote_netmask somealias
+iroute somenetwork
+iroute somenetwork somenetmask
+client-to-client
+duplicate-cn
+client-connect somecmd
+client-disconnect somecmd
+client-config-dir somedir
+ccd-exclusive
+tmp-dir somedir
+hash-size somer somev
+bcast-buffers 10
+tcp-queue-limit 10
+tcp-nodelay
+max-clients 10
+max-routes-per-client 10
+stale-routes-check 10
+stale-routes-check 10 15
+connect-freq 10 15
+learn-address somecmd
+auth-user-pass-verify somecmd somemethod
+auth-gen-token
+auth-gen-token somelifetime
+opt-verify
+auth-user-pass-optional
+client-cert-not-required
+verify-client-cert none
+username-as-common-name
+compat-names
+compat-names somenoremapping
+no-name-remapping
+port-share somehost someport
+port-share somehost someport somedir
+client
+pull
+pull-filter accept sometext
+auth-user-pass
+auth-user-pass somefile
+auth-retry sometype
+static-challenge sometext someflag
+server-poll-timeout 10
+connect-timeout 10
+explicit-exit-notify
+explicit-exit-notify 10
+allow-recursive-routing
+secret somefile
+secret somefile somedirection
+key-direction somedirection
+auth somealg
+cipher somealg
+ncp-ciphers cipher1:cipher2
+ncp-disable
+keysize 10
+prng somealg
+prng somealg 16
+engine
+engine someengine
+no-replay
+replay-window 10
+replay-window 10 15
+mute-replay-warnings
+replay-persist somefile
+no-iv
+use-prediction-resistance
+test-crypto
+tls-server
+tls-client
+ca somefile
+capath dir
+dh somefile
+ecdh-curve somename
+cert somefile
+extra-certs somefile
+key seomfile
+tls-version-min someversion
+tls-version-min someversion or-highest
+tls-version-max someversion
+pkcs12 somefile
+verify-hash somehash
+pkcs11-cert-private arg1 arg2
+pkcs11-id somename
+pkcs11-id-management
+pkcs11-pin-cache 10
+pkcs11-protected-authentication arg1 arg2
+pkcs11-providers provider1 provider2
+pkcs11-private-mode somemode...
+cryptoapicert some_select_string
+key-method somemethod
+tls-cipher cipher1:cipher2
+tls-timeout 10
+reneg-bytes 10
+reneg-pkts 10
+reneg-sec 10
+hand-window 10
+tran-window 10
+single-session
+tls-exit
+tls-auth somefile
+tls-auth somefile somedirection
+tls-crypt somekeyfile
+askpass
+askpass somefile
+auth-nocache
+auth-token sometoken
+tls-verify somecmd
+tls-export-cert somedirectory
+x509-username-field someieldname
+verify-x509-name name type
+x509-track attribute
+ns-cert-type client
+remote-cert-ku v1 v2
+remote-cert-eku oid
+remote-cert-tls client|server
+crl-verify crl somedir
+show-ciphers
+show-digests
+show-tls
+show-engines
+show-curves
+genkey
+secret file
+mktun
+rmtun
+user user
+group group
+win-sys path
+ip-win32 method
+route-method m
+dhcp-option type
+dhcp-option type parm1
+tap-sleep 10
+show-net-up
+block-outside-dns
+dhcp-renew
+dhcp-release
+register-dns
+pause-exit
+service some_exit_event
+service some_exit_event 0
+show-adapters
+allow-nonadmin
+allow-nonadmin someadapter
+show-valid-subnets
+show-net
+show-pkcs11-ids someprovider
+show-pkcs11-ids someprovider somecertprovider
+show-gateway
+show-gateway somev6target
+ifconfig-ipv6 someipv6addr someipv6remote
+route-ipv6 someipv6addr
+route-ipv6 someipv6addr somegateway
+route-ipv6 someipv6addr somegateway somemetric
+server-ipv6 someipv6addr
+ifconfig-ipv6-pool someipv6addr
+ifconfig-ipv6-push someipv6addr someipv6remote
+iroute-ipv6 someipv6addr

@@ -1,0 +1,269 @@
+--help
+--config file
+--mode m
+--local host
+--remote host [port] [proto]
+--remote-random-hostname
+--proto-force p
+--remote-random
+--proto p
+--connect-retry n [max]
+--connect-retry-max n
+--show-proxy-settings
+--http-proxy server port [authfile_or_auto_or_auto_nct] [auth-method]
+--http-proxy-option type [parm]
+--socks-proxy server [port] [authfile]
+--resolv-retry n
+--float
+--ipchange cmd
+--port port
+--lport port
+--rport port
+--bind [ipv6only]
+--nobind
+--dev devarg
+--dev-type device-type
+--topology mode
+--dev-node node
+--lladdr address
+--iproute cmd
+--ifconfig l rn
+--ifconfig-noexec
+--ifconfig-nowarn
+--route network_or_ip [netmask] [gateway] [metric]
+--route-gateway gw_or_dhcp
+--route-metric m
+--route-delay [n] [w]
+--route-up cmd
+--route-pre-down cmd
+--route-noexec
+--route-nopull
+--allow-pull-fqdn
+--client-nat snat_or_dnat network netmask alias
+--redirect-gateway flags...
+--redirect-private [flags...]
+--link-mtu n
+--edirect-private flags...
+--tun-mtu n
+--tun-mtu-extra n
+--mtu-disc type
+--mtu-test
+--fragment max
+--mssfix max
+--sndbuf size
+--rcvbuf size
+--mark value
+--socket-flags flags...
+--txqueuelen n
+--shaper n
+--inactive n [bytes]
+--ping n
+--ping-exit n
+--ping-restart n
+--keepalive interval timeout
+--ping-timer-rem
+--persist-tun
+--persist-key
+--persist-local-ip
+--persist-remote-ip
+--mlock
+--up cmd
+--up-delay
+--down cmd
+--down-pre
+--up-restart
+--setenv name value
+--setenv-safe name value
+--ignore-unknown-option opts...
+--script-security level
+--disable-occ
+--user user
+--group group
+--cd dir
+--chroot dir
+--setcon context
+--daemon [progname]
+--syslog [progname]
+--errors-to-stderr
+--passtos
+--inetd [wait_or_nowait] [progname]
+--log file
+--log-append file
+--suppress-timestamps
+--machine-readable-output
+--writepid file
+--nice n
+--fast-io
+--multihome
+--echo [parms...]
+--remap-usr1 signal
+--verb n
+--status file [n]
+--status-version [n]
+--mute n
+--compress [algorithm]
+--comp-lzo [mode]
+--comp-noadapt
+--management IP port [pw-file]
+--management-client
+--management-query-passwords
+--management-query-proxy
+--management-query-remote
+--management-external-key
+--management-external-cert certificate-hint
+--management-forget-disconnect
+--management-hold
+--management-signal
+--management-log-cache n
+--management-up-down
+--management-client-auth
+--management-client-pf
+--management-client-user u
+--management-client-group g
+--plugin module-pathname [init-string]
+--keying-material-exporter label len
+--server network netmask [nopool]
+--server-bridge gateway netmask pool-start-IP pool-end-IP
+--server-bridge [nogw]
+--push option
+--push-reset
+--push-remove opt
+--push-peer-info
+--disable
+--ifconfig-pool start-IP end-IP [netmask]
+--ifconfig-pool-persist file [seconds]
+--ifconfig-pool-linear
+--ifconfig-push local remote-netmask [alias]
+--iroute network [netmask]
+--client-to-client
+--duplicate-cn
+--client-connect cmd
+--client-disconnect cmd
+--client-config-dir dir
+--ccd-exclusive
+--tmp-dir dir
+--hash-size r v
+--bcast-buffers n
+--tcp-queue-limit n
+--tcp-nodelay
+--max-clients n
+--max-routes-per-client n
+--stale-routes-check n [t]
+--connect-freq n sec
+--learn-address cmd
+--auth-user-pass-verify cmd method
+--auth-gen-token [lifetime]
+--opt-verify
+--auth-user-pass-optional
+--client-cert-not-required
+--verify-client-cert none_optional_require
+--username-as-common-name
+--compat-names [no-remapping]
+--no-name-remapping
+--port-share host port [dir]
+--client
+--pull
+--pull-filter accept_or_ignore_or_reject text
+--auth-user-pass [up]
+--auth-retry type
+--static-challenge t e
+--server-poll-timeout n
+--connect-timeout n
+--explicit-exit-notify [n]
+--allow-recursive-routing
+--secret file [direction]
+--key-direction direction
+--auth alg
+--cipher alg
+--ncp-ciphers cipher_list
+--ncp-disable
+--keysize n
+--prng alg [nsl]
+--engine [engine-name]
+--no-replay
+--replay-window n [t]
+--mute-replay-warnings
+--replay-persist file
+--no-iv
+--use-prediction-resistance
+--test-crypto
+--tls-server
+--tls-client
+--ca file
+--capath dir
+--dh file
+--ecdh-curve name
+--cert file
+--extra-certs file
+--key file
+--tls-version-min version [or-highest]
+--tls-version-max version
+--pkcs12 file
+--verify-hash hash
+--pkcs11-cert-private providers...
+--pkcs11-id name
+--pkcs11-id-management
+--pkcs11-pin-cache seconds
+--pkcs11-protected-authentication providers...
+--pkcs11-providers providers...
+--pkcs11-private-mode modes...
+--cryptoapicert select-string
+--key-method m
+--tls-cipher l
+--tls-timeout n
+--reneg-bytes n
+--reneg-pkts n
+--reneg-sec n
+--hand-window n
+--tran-window n
+--single-session
+--tls-exit
+--tls-auth file [direction]
+--tls-crypt keyfile
+--askpass [file]
+--auth-nocache
+--auth-token token
+--tls-verify cmd
+--tls-export-cert directory
+--x509-username-field fieldname
+--verify-x509-name name type
+--x509-track attribute
+--ns-cert-type client_or_server
+--remote-cert-ku values...
+--remote-cert-eku oid
+--remote-cert-tls client_or_server
+--crl-verify crl [dir]
+--show-ciphers
+--show-digests
+--show-tls
+--show-engines
+--show-curves
+--genkey
+--mktun
+--rmtun
+--user user
+--group group
+--win-sys path
+--ip-win32 method
+--route-method m
+--dhcp-option type [parm]
+--tap-sleep n
+--show-net-up
+--block-outside-dns
+--dhcp-renew
+--dhcp-release
+--register-dns
+--pause-exit
+--service exit-event [initial-state-of-event]
+--show-adapters
+--allow-nonadmin [TAP-adapter]
+--show-valid-subnets
+--show-net
+--show-pkcs11-ids [provider] [cert_private]
+--show-gateway [v6target]
+--ifconfig-ipv6 ipv6addr ipv6remote
+--route-ipv6 ipv6addr [gateway] [metric]
+--server-ipv6 ipv6addr
+--ifconfig-ipv6-pool ipv6addr
+--ifconfig-ipv6-push ipv6addr ipv6remote
+--iroute-ipv6 ipv6addr
