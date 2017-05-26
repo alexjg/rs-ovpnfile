@@ -3,7 +3,7 @@ extern crate spectral;
 
 use spectral::boolean::BooleanAssertions;
 use std::io::{BufReader};
-use ovpnfile::{ConfigDirective, ServerGatewayArg};
+use ovpnfile::{ConfigDirective, ServerGatewayArg, File};
 
 #[test]
 fn test_reads_ovpnfile() {
@@ -215,8 +215,8 @@ fn test_reads_ovpnfile() {
         ConfigDirective::ExplicitExitNotify{n: None},
         ConfigDirective::ExplicitExitNotify{n: Some("10".to_string())},
         ConfigDirective::AllowRecursiveRouting,
-        ConfigDirective::Secret{file: "somefile".to_string(), direction: None},
-        ConfigDirective::Secret{file: "somefile".to_string(), direction: Some("somedirection".to_string())},
+        ConfigDirective::Secret{file: File::FilePath("somefile".to_string()), direction: None},
+        ConfigDirective::Secret{file: File::FilePath("somefile".to_string()), direction: Some("somedirection".to_string())},
         ConfigDirective::KeyDirection{direction: "somedirection".to_string()},
         ConfigDirective::Auth{alg: "somealg".to_string()},
         ConfigDirective::Cipher{alg: "somealg".to_string()},
@@ -237,17 +237,17 @@ fn test_reads_ovpnfile() {
         ConfigDirective::TestCrypto,
         ConfigDirective::TlsServer,
         ConfigDirective::TlsClient,
-        ConfigDirective::Ca{file: "somefile".to_string()},
+        ConfigDirective::Ca{file: File::FilePath("somefile".to_string())},
         ConfigDirective::Capath{dir: "dir".to_string()},
-        ConfigDirective::Dh{file: "somefile".to_string()},
+        ConfigDirective::Dh{file: File::FilePath("somefile".to_string())},
         ConfigDirective::EcdhCurve{name: "somename".to_string()},
-        ConfigDirective::Cert{file: "somefile".to_string()},
-        ConfigDirective::ExtraCerts{file: "somefile".to_string()},
-        ConfigDirective::Key{file: "seomfile".to_string()},
+        ConfigDirective::Cert{file: File::FilePath("somefile".to_string())},
+        ConfigDirective::ExtraCerts{file: File::FilePath("somefile".to_string())},
+        ConfigDirective::Key{file: File::FilePath("seomfile".to_string())},
         ConfigDirective::TlsVersionMin{version: "someversion".to_string(), or_highest: None},
         ConfigDirective::TlsVersionMin{version: "someversion".to_string(), or_highest: Some("or-highest".to_string())},
         ConfigDirective::TlsVersionMax{version: "someversion".to_string()},
-        ConfigDirective::Pkcs12{file: "somefile".to_string()},
+        ConfigDirective::Pkcs12{file: File::FilePath("somefile".to_string())},
         ConfigDirective::VerifyHash{hash: "somehash".to_string()},
         ConfigDirective::Pkcs11CertPrivate{providers: vec!["arg1".to_string(), "arg2".to_string()]},
         ConfigDirective::Pkcs11Id{name: "somename".to_string()},
@@ -267,9 +267,9 @@ fn test_reads_ovpnfile() {
         ConfigDirective::TranWindow{n: "10".to_string()},
         ConfigDirective::SingleSession,
         ConfigDirective::TlsExit,
-        ConfigDirective::TlsAuth{file: "somefile".to_string(), direction: None},
-        ConfigDirective::TlsAuth{file: "somefile".to_string(), direction: Some("somedirection".to_string())},
-        ConfigDirective::TlsCrypt{keyfile: "somekeyfile".to_string()},
+        ConfigDirective::TlsAuth{file: File::FilePath("somefile".to_string()), direction: None},
+        ConfigDirective::TlsAuth{file: File::FilePath("somefile".to_string()), direction: Some("somedirection".to_string())},
+        ConfigDirective::TlsCrypt{file: File::FilePath("somekeyfile".to_string())},
         ConfigDirective::Askpass{file: None},
         ConfigDirective::Askpass{file: Some("somefile".to_string())},
         ConfigDirective::AuthNocache,
@@ -283,14 +283,14 @@ fn test_reads_ovpnfile() {
         ConfigDirective::RemoteCertKu{values: vec!["v1".to_string(), "v2".to_string()]},
         ConfigDirective::RemoteCertEku{oid: "oid".to_string()},
         ConfigDirective::RemoteCertTls{client_or_server: "client|server".to_string()},
-        ConfigDirective::CrlVerify{crl: "crl".to_string(), dir: Some("somedir".to_string())},
+        ConfigDirective::CrlVerify{file: File::FilePath("crl".to_string()), direction: Some("somedir".to_string())},
         ConfigDirective::ShowCiphers,
         ConfigDirective::ShowDigests,
         ConfigDirective::ShowTls,
         ConfigDirective::ShowEngines,
         ConfigDirective::ShowCurves,
         ConfigDirective::Genkey,
-        ConfigDirective::Secret{file: "file".to_string(), direction: None},
+        ConfigDirective::Secret{file: File::FilePath("file".to_string()), direction: None},
         ConfigDirective::Mktun,
         ConfigDirective::Rmtun,
         ConfigDirective::User{user: "user".to_string()},
@@ -360,6 +360,33 @@ fn test_reads_file_with_comments() {
         vec![
         ConfigDirective::Help,
         ConfigDirective::Remote{host: "somehost".to_string(), port: Some("someport".to_string()), proto: None},
+        ]
+        )
+}
+
+#[test]
+fn test_reads_inline_file_contents() {
+    let test_ovpnfile = include_str!("test-inline.ovpn");
+    let test_reader = BufReader::new(test_ovpnfile.as_bytes());
+    let result_wrapped = ovpnfile::parse(test_reader);
+    assert!(result_wrapped.is_ok());
+    let result = result_wrapped.unwrap();
+    println!("{:?}", result.warnings);
+    spectral::assert_that(&result.warnings.len()).is_equal_to(0);
+    let directives: Vec<ConfigDirective> = result.directives.iter().map(|d| d.result.clone()).collect();
+    spectral::assert_that(&directives).is_equal_to(
+        vec![
+        ConfigDirective::Ca{file: File::InlineFileContents("cacontent1\ncacontent2".to_string())},
+        ConfigDirective::Cert{file: File::InlineFileContents("cert1\ncert2".to_string())},
+        ConfigDirective::ExtraCerts{file: File::InlineFileContents("extra-cert1\nextra-cert2".to_string())},
+        ConfigDirective::Dh{file: File::InlineFileContents("dh1\ndh2".to_string())},
+        ConfigDirective::Key{file: File::InlineFileContents("key1\nkey2".to_string())},
+        ConfigDirective::Pkcs12{file: File::InlineFileContents("pkcs12-1\npkcs12-2".to_string())},
+        ConfigDirective::Secret{file: File::InlineFileContents("secret1\nsecret2".to_string()), direction: None},
+        ConfigDirective::CrlVerify{file: File::InlineFileContents("crl-verify1\ncrl-verify2".to_string()), direction: None},
+        ConfigDirective::HttpProxyUserPass{file: File::InlineFileContents("http-proxy-user-pass-1\nhttp-proxy-user-pass-2".to_string())},
+        ConfigDirective::TlsAuth{file: File::InlineFileContents("tls-auth1\ntls-auth2".to_string()), direction: None},
+        ConfigDirective::TlsCrypt{file: File::InlineFileContents("tls-crypt1\ntls-crypt2".to_string())},
         ]
         )
 }

@@ -11,6 +11,12 @@ pub enum ServerGatewayArg {
     GatewayConfig{gateway: String, netmask: String, pool_start_ip: String, pool_end_ip: String},
 }
 
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub enum File {
+    FilePath(String),
+    InlineFileContents(String),
+}
+
 // This macro courtesy of https://stackoverflow.com/questions/44160750/how-to-generate-complex-enum-variants-with-a-macro-in-rust
 macro_rules! define_config_directives {
     //Counting rules
@@ -190,6 +196,75 @@ macro_rules! define_config_directives {
             $($tail)*
         }
     };
+    // Rule for inline file commands.
+    (
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        {
+            command: $sname:expr,
+            rust_name: $rname:ident,
+            inline_file: true
+        },
+        $($tail:tt)*
+    ) => {
+        define_config_directives! {
+            @parse
+            {
+                $($eout)*
+                    $rname { file: File},
+            },
+            ($pargs){
+                $($pout)*
+                    $sname => {
+                        if $pargs.len() < 1 {
+                            LineParseResult::NotEnoughArguments
+                        } else {
+                            LineParseResult::Success(ConfigDirective::$rname {
+                                file: File::FilePath($pargs[0].to_string()),
+                            })
+                        }
+                    },
+            };
+            $($tail)*
+        }
+    };
+    //Rule for inline file with optional arguments
+    (
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        {
+            command: $sname:expr,
+            rust_name: $rname:ident,
+            inline_file: true,
+            optional_args: [$($oargs:ident),* $(,)*] $(,)*
+        },
+        $($tail:tt)*
+    ) => {
+        define_config_directives! {
+            @parse
+            {
+                $($eout)*
+                    $rname { file: File, $($oargs: Option<String>, )*},
+            },
+            ($pargs){
+                $($pout)*
+                    $sname => {
+                        if $pargs.len() < 1 {
+                            LineParseResult::NotEnoughArguments
+                        } else {
+                            let filename = File::FilePath($pargs[0].to_string());
+                            let mut i = 1;
+                            $(let $oargs = $pargs.get(i).map(|&s| s.into()); i += 1;)*
+                                let _ = i; // avoid unused assignment warnings.
+
+                            LineParseResult::Success(ConfigDirective::$rname {
+                                file: filename,
+                                $($oargs: $oargs,)*
+                            })
+                        }
+                    },
+            };
+            $($tail)*
+        }
+    };
 }
 
 define_config_directives!{
@@ -207,6 +282,7 @@ define_config_directives!{
     {command: "show-proxy-settings", rust_name: ShowProxySettings, args: [], optional_args: []},
     {command: "http-proxy", rust_name: HttpProxy, args: [server, port], optional_args: [authfile_or_auto_or_auto_nct, auth_method]},
     {command: "http-proxy-option", rust_name: HttpProxyOption, args: [http_proxy_option_type], optional_args: [parm]},
+    {command: "http-proxy-user-type", rust_name: HttpProxyUserPass, inline_file: true},
     {command: "socks-proxy", rust_name: SocksProxy, args: [server], optional_args: [port, authfile]},
     {command: "resolv-retry", rust_name: ResolvRetry, args: [n], optional_args: []},
     {command: "float", rust_name: Float, args: [], optional_args: []},
@@ -363,7 +439,7 @@ define_config_directives!{
     {command: "connect-timeout", rust_name: ConnectTimeout, args: [n], optional_args: []},
     {command: "explicit-exit-notify", rust_name: ExplicitExitNotify, args: [], optional_args: [n]},
     {command: "allow-recursive-routing", rust_name: AllowRecursiveRouting, args: [], optional_args: []},
-    {command: "secret", rust_name: Secret, args: [file], optional_args: [direction]},
+    {command: "secret", rust_name: Secret, inline_file: true, optional_args: [direction]},
     {command: "key-direction", rust_name: KeyDirection, args: [direction], optional_args: []},
     {command: "auth", rust_name: Auth, args: [alg], optional_args: []},
     {command: "cipher", rust_name: Cipher, args: [alg], optional_args: []},
@@ -379,18 +455,19 @@ define_config_directives!{
     {command: "no-iv", rust_name: NoIv, args: [], optional_args: []},
     {command: "use-prediction-resistance", rust_name: UsePredictionResistance, args: [], optional_args: []},
     {command: "test-crypto", rust_name: TestCrypto, args: [], optional_args: []},
+    {command: "tls-auth", rust_name: TlsAuth, inline_file: true, optional_args: [direction]},
     {command: "tls-server", rust_name: TlsServer, args: [], optional_args: []},
     {command: "tls-client", rust_name: TlsClient, args: [], optional_args: []},
-    {command: "ca", rust_name: Ca, args: [file], optional_args: []},
+    {command: "ca", rust_name: Ca, inline_file: true},
     {command: "capath", rust_name: Capath, args: [dir], optional_args: []},
-    {command: "dh", rust_name: Dh, args: [file], optional_args: []},
+    {command: "dh", rust_name: Dh, inline_file: true},
     {command: "ecdh-curve", rust_name: EcdhCurve, args: [name], optional_args: []},
-    {command: "cert", rust_name: Cert, args: [file], optional_args: []},
-    {command: "extra-certs", rust_name: ExtraCerts, args: [file], optional_args: []},
-    {command: "key", rust_name: Key, args: [file], optional_args: []},
+    {command: "cert", rust_name: Cert, inline_file: true},
+    {command: "extra-certs", rust_name: ExtraCerts, inline_file: true},
+    {command: "key", rust_name: Key, inline_file: true},
     {command: "tls-version-min", rust_name: TlsVersionMin, args: [version], optional_args: [or_highest]},
     {command: "tls-version-max", rust_name: TlsVersionMax, args: [version], optional_args: []},
-    {command: "pkcs12", rust_name: Pkcs12, args: [file], optional_args: []},
+    {command: "pkcs12", rust_name: Pkcs12, inline_file: true},
     {command: "verify-hash", rust_name: VerifyHash, args: [hash], optional_args: []},
     {command: "pkcs11-cert-private", rust_name: Pkcs11CertPrivate, varargs: providers},
     {command: "pkcs11-id", rust_name: Pkcs11Id, args: [name], optional_args: []},
@@ -410,8 +487,7 @@ define_config_directives!{
     {command: "tran-window", rust_name: TranWindow, args: [n], optional_args: []},
     {command: "single-session", rust_name: SingleSession, args: [], optional_args: []},
     {command: "tls-exit", rust_name: TlsExit, args: [], optional_args: []},
-    {command: "tls-auth", rust_name: TlsAuth, args: [file], optional_args: [direction]},
-    {command: "tls-crypt", rust_name: TlsCrypt, args: [keyfile], optional_args: []},
+    {command: "tls-crypt", rust_name: TlsCrypt, inline_file: true},
     {command: "askpass", rust_name: Askpass, args: [], optional_args: [file]},
     {command: "auth-nocache", rust_name: AuthNocache, args: [], optional_args: []},
     {command: "auth-token", rust_name: AuthToken, args: [token], optional_args: []},
@@ -424,7 +500,7 @@ define_config_directives!{
     {command: "remote-cert-ku", rust_name: RemoteCertKu, varargs: values},
     {command: "remote-cert-eku", rust_name: RemoteCertEku, args: [oid], optional_args: []},
     {command: "remote-cert-tls", rust_name: RemoteCertTls, args: [client_or_server], optional_args: []},
-    {command: "crl-verify", rust_name: CrlVerify, args: [crl], optional_args: [dir]},
+    {command: "crl-verify", rust_name: CrlVerify, inline_file: true, optional_args: [direction]},
     {command: "show-ciphers", rust_name: ShowCiphers, args: [], optional_args: []},
     {command: "show-digests", rust_name: ShowDigests, args: [], optional_args: []},
     {command: "show-tls", rust_name: ShowTls, args: [], optional_args: []},
