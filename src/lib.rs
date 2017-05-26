@@ -18,7 +18,7 @@
 //! [here](https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage)
 //!
 //! This library represents each possible option as a separate variant  of the
-//! `[ConfigDirective](enum.ConfigDirective.html)` enum. Required arguments are
+//! `ConfigDirective` enum. Required arguments are
 //! are represented as `String`s whilst optional arguments are represented as
 //! `Option<String>`. There are a few exceptions which I will mention shortly.
 //!
