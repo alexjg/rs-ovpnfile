@@ -5,6 +5,7 @@ repository = "https://github.com/alexjg/rs-ovpnfile"
 license = "MIT/Apache-2.0"
 version = "0.1.0"
 authors = ["Alex Good"]
+readme = "README.md"
 
 [dependencies]
 error-chain = "0.10"

@@ -3,7 +3,7 @@ extern crate spectral;
 
 use spectral::boolean::BooleanAssertions;
 use std::io::{BufReader};
-use ovpnfile::{ConfigDirective, ServerGatewayArg, File};
+use ovpnfile::{ConfigDirective, ServerBridgeArg, File};
 
 #[test]
 fn test_reads_ovpnfile() {
@@ -327,22 +327,22 @@ fn test_reads_ovpnfile() {
         ConfigDirective::IfconfigIpv6Push{ipv6addr: "someipv6addr".to_string(), ipv6remote: "someipv6remote".to_string()},
         ConfigDirective::IrouteIpv6{ipv6addr: "someipv6addr".to_string()},
         ConfigDirective::KeyDirection{direction: "1".to_string()},
-        ConfigDirective::ServerGateway(ServerGatewayArg::GatewayConfig{
+        ConfigDirective::ServerBridge(ServerBridgeArg::GatewayConfig{
             gateway: "somegateway".to_string(),
             netmask: "somenetmask".to_string(),
             pool_start_ip: "some_start_ip".to_string(),
             pool_end_ip: "some_end_ip".to_string(),
         }),
-        ConfigDirective::ServerGateway(ServerGatewayArg::NoGateway),
+        ConfigDirective::ServerBridge(ServerBridgeArg::NoGateway),
         ];
     let test_ovpnfile = include_str!("test.ovpn");
     let test_reader = BufReader::new(test_ovpnfile.as_bytes());
     let result_wrapped = ovpnfile::parse(test_reader);
     spectral::assert_that(&result_wrapped.is_ok()).is_true();
     let result = result_wrapped.unwrap();
-    spectral::assert_that(&result.directives.len()).is_equal_to(&expected_result.len());
+    //spectral::assert_that(&result.success_lines.len()).is_equal_to(&expected_result.len());
     for (index, expected_item) in expected_result.iter().enumerate() {
-        let actual_result = result.directives[index].result.clone();
+        let actual_result = result.success_lines[index].result.clone();
         spectral::asserting(&format!("Config index {}", index)).that(&actual_result).is_equal_to(expected_item);
     }
 }
@@ -354,8 +354,8 @@ fn test_reads_file_with_comments() {
     let result_wrapped = ovpnfile::parse(test_reader);
     assert!(result_wrapped.is_ok());
     let result = result_wrapped.unwrap();
-    spectral::assert_that(&result.warnings.len()).is_equal_to(0);
-    let directives: Vec<ConfigDirective> = result.directives.iter().map(|d| d.result.clone()).collect();
+    spectral::assert_that(&result.warning_lines.len()).is_equal_to(0);
+    let directives: Vec<ConfigDirective> = result.success_lines.iter().map(|d| d.result.clone()).collect();
     spectral::assert_that(&directives).is_equal_to(
         vec![
         ConfigDirective::Help,
@@ -371,9 +371,8 @@ fn test_reads_inline_file_contents() {
     let result_wrapped = ovpnfile::parse(test_reader);
     assert!(result_wrapped.is_ok());
     let result = result_wrapped.unwrap();
-    println!("{:?}", result.warnings);
-    spectral::assert_that(&result.warnings.len()).is_equal_to(0);
-    let directives: Vec<ConfigDirective> = result.directives.iter().map(|d| d.result.clone()).collect();
+    spectral::assert_that(&result.warning_lines.len()).is_equal_to(0);
+    let directives: Vec<ConfigDirective> = result.success_lines.iter().map(|d| d.result.clone()).collect();
     spectral::assert_that(&directives).is_equal_to(
         vec![
         ConfigDirective::Ca{file: File::InlineFileContents("cacontent1\ncacontent2".to_string())},

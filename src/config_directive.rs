@@ -6,7 +6,7 @@ pub enum LineParseResult {
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub enum ServerGatewayArg {
+pub enum ServerBridgeArg {
     NoGateway,
     GatewayConfig{gateway: String, netmask: String, pool_start_ip: String, pool_end_ip: String},
 }
@@ -45,16 +45,16 @@ macro_rules! define_config_directives {
         #[derive(PartialEq, Eq, Debug, Clone)]
         pub enum ConfigDirective {
             $($eout)*
-                ServerGateway(ServerGatewayArg),
+                ServerBridge(ServerBridgeArg),
         }
 
         pub fn parse_line(command: &str, $args: &[&str]) -> LineParseResult {
             match command {
                 $($pout)*
-                    "server-gateway" => {
+                    "server-bridge" => {
                         match $args.len() {
-                            1 if $args[0] == "nogw" => LineParseResult::Success(ConfigDirective::ServerGateway(ServerGatewayArg::NoGateway)),
-                            4 => LineParseResult::Success(ConfigDirective::ServerGateway(ServerGatewayArg::GatewayConfig{
+                            1 if $args[0] == "nogw" => LineParseResult::Success(ConfigDirective::ServerBridge(ServerBridgeArg::NoGateway)),
+                            4 => LineParseResult::Success(ConfigDirective::ServerBridge(ServerBridgeArg::GatewayConfig{
                                 gateway: $args[0].to_string(),
                                 netmask: $args[1].to_string(),
                                 pool_start_ip: $args[2].to_string(),
