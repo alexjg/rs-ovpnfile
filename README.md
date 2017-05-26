@@ -1,7 +1,25 @@
-# ovpnfile [![Build Status](https://travis-ci.org/alexjg/rs-ovpnfile.svg?branch=master)](https://travis-ci.org/alexjg/rs-ovpnfile)[![Crates.io](https://img.shields.io/crates/v/ovpnfile.svg)](https://crates.io/crates/ovpnfile)
+# ovpnfile [![Build Status](https://travis-ci.org/alexjg/rs-ovpnfile.svg?branch=master)](https://travis-ci.org/alexjg/rs-ovpnfile) [![Crates.io](https://img.shields.io/crates/v/ovpnfile.svg)](https://crates.io/crates/ovpnfile)
 
-This is a tiny library for parsing openvpn config files as documented (here)[https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage]. See the documentation for more details.
+This is a tiny library for parsing openvpn config files as documented [here](https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage).
 
+## Usage
+
+Install the thing
+
+    cargo install ovpnfile
+
+Use the thing
+
+```rust
+use ovpnfile;
+let mut file = File::open("myovpnfile.ovpn").unwrap();
+let parsed_file = ovpnfile::parse(file).unwrap();
+let first_line = parsed_file.directives[0];
+assert!(first_line.line_no == 5) //or whatever line the first succesfully parsed directive was on
+assert!(first_line.directive == ovpnfile::ConfigDirective::Nobind)
+```
+
+See the documentation for more details.
 
 
 ## License
