@@ -1,4 +1,4 @@
-# ovpnfile [![Build Status](https://travis-ci.org/alexjg/rs-ovpnfile.svg?branch=master)](https://travis-ci.org/alexjg/rs-ovpnfile) [![Crates.io](https://img.shields.io/crates/v/ovpnfile.svg)](https://crates.io/crates/ovpnfile)
+# ovpnfile [![Build Status](https://travis-ci.org/alexjg/rs-ovpnfile.svg?branch=master)](https://travis-ci.org/alexjg/rs-ovpnfile) [![Crates.io](https://img.shields.io/crates/v/ovpnfile.svg)](https://crates.io/crates/ovpnfile) [![Docs](https://docs.rs/ovpnfile/badge.svg)](https://docs.rs/ovpnfile/0.1.0/ovpnfile/)
 
 This is a tiny library for parsing openvpn config files as documented [here](https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage).
 
