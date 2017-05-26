@@ -14,7 +14,7 @@ Use the thing
 use ovpnfile;
 let mut file = File::open("myovpnfile.ovpn").unwrap();
 let parsed_file = ovpnfile::parse(file).unwrap();
-let first_line = parsed_file.directives[0];
+let first_line = parsed_file.success_lines[0];
 assert!(first_line.line_no == 5) //or whatever line the first succesfully parsed directive was on
 assert!(first_line.directive == ovpnfile::ConfigDirective::Nobind)
 ```
