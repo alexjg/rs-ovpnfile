@@ -59,64 +59,68 @@ macro_rules! define_config_directives {
         }
 
         impl ConfigDirective {
+            #[cfg_attr(feature="cargo-clippy", allow(let_and_return))]
             fn required_arg_values(&self) -> Vec<String> {
-                match self {
+                match *self {
                     $($argsout)*
-                        &ConfigDirective::ServerBridge(ServerBridgeArg::NoGateway) => vec!["nogw".to_string()],
-                        &ConfigDirective::ServerBridge(ServerBridgeArg::GatewayConfig{
+                        ConfigDirective::ServerBridge(ServerBridgeArg::NoGateway) => vec!["nogw".to_string()],
+                        ConfigDirective::ServerBridge(ServerBridgeArg::GatewayConfig{
                             ref gateway, ref netmask, ref pool_start_ip, ref pool_end_ip
                         }) => vec![gateway.clone(), netmask.clone(), pool_start_ip.clone(), pool_end_ip.clone()]
                 }
             }
+            #[cfg_attr(feature="cargo-clippy", allow(let_and_return))]
             fn optional_arg_values(&self) -> Vec<String> {
-                match self {
+                match *self {
                     $($oargsout)*
-                        &ConfigDirective::ServerBridge(_) => Vec::new(),
+                        ConfigDirective::ServerBridge(_) => Vec::new(),
                 }
             }
             /// The option name this directive was constructed from
+            #[cfg_attr(feature="cargo-clippy", allow(let_and_return))]
             pub fn openvpn_option_name(&self) -> &str {
-                match self {
+                match *self {
                     $($commandname_out)*
-                        &ConfigDirective::ServerBridge(_) => "server-bridge",
+                        ConfigDirective::ServerBridge(_) => "server-bridge",
                 }
             }
             /// The line this directive would appear as in a config file. For
             /// directives with inline file contents this will appear as multiple
             /// lines exactly as in the config file.
+            #[cfg_attr(feature="cargo-clippy", allow(let_and_return))]
             pub fn as_ovpn_config(&self) -> String {
-                match self {
-                    &ConfigDirective::Ca{file: File::InlineFileContents(ref contents), ..} => {
+                match *self {
+                    ConfigDirective::Ca{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::Cert{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::Cert{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::ExtraCerts{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::ExtraCerts{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::Dh{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::Dh{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::Key{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::Key{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::Pkcs12{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::Pkcs12{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::CrlVerify{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::CrlVerify{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::HttpProxyUserPass{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::HttpProxyUserPass{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::TlsAuth{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::TlsAuth{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::TlsCrypt{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::TlsCrypt{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
-                    &ConfigDirective::Secret{file: File::InlineFileContents(ref contents), ..} => {
+                    ConfigDirective::Secret{file: File::InlineFileContents(ref contents), ..} => {
                         inline_file_contents(self.openvpn_option_name(), contents)
                     },
                     _ => format!(
@@ -130,7 +134,7 @@ macro_rules! define_config_directives {
         }
 
         fn inline_file_contents(option_name: &str, contents: &str) -> String {
-            return format!("<{}>\n{}\n</{}>", option_name, contents, option_name);
+            format!("<{}>\n{}\n</{}>", option_name, contents, option_name)
         }
 
         pub fn parse_line(command: &str, $args: &[&str]) -> LineParseResult {
@@ -177,15 +181,15 @@ macro_rules! define_config_directives {
             },
             {
                 $($commandname_out)*
-                    &ConfigDirective::$rname => $sname,
+                    ConfigDirective::$rname => $sname,
             },
             {
                 $($argsout)*
-                    &ConfigDirective::$rname => Vec::new(),
+                    ConfigDirective::$rname => Vec::new(),
             },
             {
                 $($oargsout)*
-                    &ConfigDirective::$rname => Vec::new(),
+                    ConfigDirective::$rname => Vec::new(),
             };
             $($tail)*
         }
@@ -213,46 +217,41 @@ macro_rules! define_config_directives {
                     $sname => {
                         let num_required_args = define_config_directives!(@count $($args),*);
                         if $pargs.len() < num_required_args {
-                            return LineParseResult::NotEnoughArguments
-                        }
-                        // This trickery is because macros can't count with
-                        // regular integers.  We'll just use a mutable index
-                        // instead.
-                        let mut i = 0;
-                        $(let $args = $pargs[i].into(); i += 1;)*
-                            $(let $oargs = $pargs.get(i).map(|&s| s.into()); i += 1;)*
-                            let _ = i; // avoid unused assignment warnings.
+                            LineParseResult::NotEnoughArguments
+                        } else {
+                            // This trickery is because macros can't count with
+                            // regular integers.  We'll just use a mutable index
+                            // instead.
+                            let mut i = 0;
+                            $(let $args = $pargs[i].into(); i += 1;)*
+                                $(let $oargs = $pargs.get(i).map(|&s| s.into()); i += 1;)*
+                                let _ = i; // avoid unused assignment warnings.
 
-                        LineParseResult::Success(ConfigDirective::$rname {
-                            $($args: $args,)*
-                                $($oargs: $oargs,)*
-                        })
+                            LineParseResult::Success(ConfigDirective::$rname {
+                                $($args: $args,)*
+                                    $($oargs: $oargs,)*
+                            })
+                        }
                     },
             },
             {
                 $($commandname_out)*
-                    &ConfigDirective::$rname{..} => $sname,
+                    ConfigDirective::$rname{..} => $sname,
             },
             {
                 $($argsout)*
-                    &ConfigDirective::$rname{$(ref $args,)*..} => {
-                        if define_config_directives!(@count $($args),*) == 0 {
-                            return Vec::new();
-                        }
+                    ConfigDirective::$rname{$(ref $args,)*..} => {
                         let mut _result = Vec::new();
                         $(_result.push($args.clone());)*
-                            return _result
+                            _result
                     },
             },
             {
                 $($oargsout)*
-                    &ConfigDirective::$rname{$(ref $oargs,)* ..} => {
-                        if define_config_directives!(@count $($oargs),*) == 0 {
-                            return Vec::new();
-                        }
+                    ConfigDirective::$rname{$(ref $oargs,)* ..} => {
                         let mut _result = Vec::new();
-                        $(if let &Some(ref thing) = $oargs { _result.push(thing.clone())})*
-                            return _result
+                        $(if let Some(ref thing) = *$oargs { _result.push(thing.clone())})*
+                            _result
                     },
             };
             $($tail)*
@@ -278,27 +277,28 @@ macro_rules! define_config_directives {
                 $($pout)*
                     $sname => {
                         if $pargs.len() == 0 {
-                            return LineParseResult::NotEnoughArguments
+                            LineParseResult::NotEnoughArguments
+                        } else {
+                            LineParseResult::Success(ConfigDirective::$rname {
+                                $argname: $pargs.iter().map(|s| s.to_string()).collect(),
+                            })
                         }
-                        LineParseResult::Success(ConfigDirective::$rname {
-                            $argname: $pargs.iter().map(|s| s.to_string()).collect(),
-                        })
                     },
             },
             {
                 $($commandname_out)*
-                    &ConfigDirective::$rname{..} => $sname,
+                    ConfigDirective::$rname{..} => $sname,
             },
             {
                 $($argsout)*
-                    &ConfigDirective::$rname{ref $argname} => {
-                        return $argname.clone()
+                    ConfigDirective::$rname{ref $argname} => {
+                        $argname.clone()
                     },
             },
             {
                 $($oargsout)*
-                    &ConfigDirective::$rname{..} => {
-                        return Vec::new()
+                    ConfigDirective::$rname{..} => {
+                        Vec::new()
                     },
             };
             $($tail)*
@@ -324,32 +324,34 @@ macro_rules! define_config_directives {
                 $($pout)*
                     $sname => {
                         if $pargs.len() > 0 {
-                            return LineParseResult::Success(ConfigDirective::$rname {
+                            LineParseResult::Success(ConfigDirective::$rname {
                                 $argname: Some($pargs.iter().map(|s| s.to_string()).collect()),
                             })
+                        } else {
+                            LineParseResult::Success(ConfigDirective::$rname {
+                                $argname: None,
+                            })
                         }
-                        LineParseResult::Success(ConfigDirective::$rname {
-                            $argname: None,
-                        })
                     },
             },
             {
                 $($commandname_out)*
-                    &ConfigDirective::$rname{..} => $sname,
+                    ConfigDirective::$rname{..} => $sname,
             },
             {
                 $($argsout)*
-                    &ConfigDirective::$rname{..} => {
-                        return Vec::new()
+                    ConfigDirective::$rname{..} => {
+                        Vec::new()
                     },
             },
             {
                 $($oargsout)*
-                    &ConfigDirective::$rname{ref $argname} => {
-                        if let &Some(ref args) = $argname {
-                            return args.clone()
+                    ConfigDirective::$rname{ref $argname} => {
+                        if let Some(ref args) = *$argname {
+                            args.clone()
+                        } else {
+                            Vec::new()
                         }
-                        return Vec::new()
                     },
             };
             $($tail)*
@@ -385,21 +387,21 @@ macro_rules! define_config_directives {
             },
             {
                 $($commandname_out)*
-                    &ConfigDirective::$rname{..} => $sname,
+                    ConfigDirective::$rname{..} => $sname,
             },
             {
                 $($argsout)*
-                    &ConfigDirective::$rname{file: File::FilePath(ref path)} => {
-                        return vec!(path.clone())
+                    ConfigDirective::$rname{file: File::FilePath(ref path)} => {
+                        vec!(path.clone())
                     },
-                    &ConfigDirective::$rname{file: File::InlineFileContents(_)} => {
-                        return Vec::new()
+                    ConfigDirective::$rname{file: File::InlineFileContents(_)} => {
+                        Vec::new()
                     },
             },
             {
                 $($oargsout)*
-                    &ConfigDirective::$rname{..} => {
-                        return Vec::new()
+                    ConfigDirective::$rname{..} => {
+                        Vec::new()
                     },
             };
             $($tail)*
@@ -442,26 +444,23 @@ macro_rules! define_config_directives {
             },
             {
                 $($commandname_out)*
-                    &ConfigDirective::$rname{..} => $sname,
+                    ConfigDirective::$rname{..} => $sname,
             },
             {
                 $($argsout)*
-                    &ConfigDirective::$rname{file: File::FilePath(ref path), ..} => {
-                        return vec!(path.clone())
+                    ConfigDirective::$rname{file: File::FilePath(ref path), ..} => {
+                        vec!(path.clone())
                     },
-                    &ConfigDirective::$rname{file: File::InlineFileContents(..), ..} => {
-                        return Vec::new()
+                    ConfigDirective::$rname{file: File::InlineFileContents(..), ..} => {
+                        Vec::new()
                     },
             },
             {
                 $($oargsout)*
-                    &ConfigDirective::$rname{$(ref $oargs,)* ..} => {
-                        if define_config_directives!(@count $($oargs),*) == 0 {
-                            return Vec::new();
-                        }
+                    ConfigDirective::$rname{$(ref $oargs,)* ..} => {
                         let mut _result = Vec::new();
-                        $(if let &Some(ref thing) = $oargs { _result.push(thing.clone()) })*
-                            return Vec::new()
+                        $(if let Some(ref thing) = *$oargs { _result.push(thing.clone()) })*
+                            Vec::new()
                     },
             };
             $($tail)*
