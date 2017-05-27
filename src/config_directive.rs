@@ -5,12 +5,14 @@ pub enum LineParseResult {
     Success(ConfigDirective),
 }
 
+/// Arguments of the --server-bridge option
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum ServerBridgeArg {
     NoGateway,
     GatewayConfig{gateway: String, netmask: String, pool_start_ip: String, pool_end_ip: String},
 }
 
+/// Arguments for any option which can have inline file contents
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum File {
     FilePath(String),
@@ -48,6 +50,8 @@ macro_rules! define_config_directives {
         {$($oargsout:tt)*};
         // See, nothing here?
     ) => {
+        /// Represents one sucesfully parsed directive, there is a variant
+        /// for each possible option.
         #[derive(PartialEq, Eq, Debug, Clone)]
         pub enum ConfigDirective {
             $($eout)*

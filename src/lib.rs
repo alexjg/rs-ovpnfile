@@ -107,14 +107,16 @@
 //! ]);
 //! ```
 //!
-//! # Server Gateway
+//! # Server Bridge
 //! The `--server-bridge` argument is special, it can take two forms
 //!
-//!    server-bridge gateway netmask pool-start-IP pool-end-IP
-//!    server-bridge nogw
+//! ```rust
+//! server-bridge gateway netmask pool-start-IP pool-end-IP
+//! server-bridge nogw
+//! ```
 //!
 //! This is represented in this library as the `ServerBridgeArg` enum variant, it
-//! can either be a `NoGateway` or `GatewayConfig{gateway: String, netmaks: String,
+//! can either be a `NoGateway` or `GatewayConfig{gateway: String, netmask: String,
 //! pool_start_ip: String, pool_end_ip: String}`.
 //!
 //!
@@ -176,6 +178,7 @@ pub enum ParseWarning {
     NoMatchingCommand,
 }
 
+/// The result of the `parse` function
 pub struct ParsedConfigFile {
     pub success_lines: Vec<ConfigLine<ConfigDirective>>,
     pub warning_lines: Vec<ConfigLine<ParseWarning>>,
