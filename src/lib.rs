@@ -184,7 +184,7 @@ pub struct ParsedConfigFile {
 impl ParsedConfigFile {
     /// Get the succesfully parsed ConfigDirectives.
     pub fn directives(&self) -> Vec<ConfigDirective> {
-        return self.success_lines.iter().map(|l| l.result.clone()).collect();
+        self.success_lines.iter().map(|l| l.result.clone()).collect()
     }
 }
 
@@ -196,17 +196,17 @@ struct InlineFileParseState {
 
 impl InlineFileParseState {
     fn new(line_no: usize, identifier: String) -> InlineFileParseState {
-        return InlineFileParseState{
+        InlineFileParseState{
             start_line_no: line_no as i32,
             identifier: identifier,
             lines: Vec::new(),
         }
     }
     fn is_completed_by_line(&self, line: &str) -> bool {
-        if let Some(end_identifier_captures) = INLINE_END_REGEX.captures(&line) {
+        if let Some(end_identifier_captures) = INLINE_END_REGEX.captures(line) {
             return end_identifier_captures[1] == self.identifier
         }
-        return false
+        false
     }
     fn add_line(&mut self, line: String) {
         self.lines.push(line);
@@ -227,7 +227,7 @@ impl InlineFileParseState {
             "secret" => ConfigDirective::Secret{file: file, direction: None},
             _ => unreachable!()
         };
-        return ConfigLine{result: directive, number: self.start_line_no as i32};
+        ConfigLine{result: directive, number: self.start_line_no as i32}
     }
 }
 
@@ -265,12 +265,10 @@ pub fn parse<R>(input: R) -> errors::Result<ParsedConfigFile> where R: Read {
             }
         }
 
-        if line.trim().starts_with("#") {
+        if line.trim().starts_with('#') || line.trim().is_empty() {
             continue
         }
-        if line.trim().len() == 0 {
-            continue
-        }
+
         let line_without_comments = COMMENT_REGEX.replace(&line, "");
         let command_and_args: Vec<&str> = line_without_comments.split_whitespace().collect();
         let command = command_and_args[0];
