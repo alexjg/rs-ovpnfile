@@ -28,7 +28,7 @@ macro_rules! define_config_directives {
     ( $( {$($cmd:tt)*} ),* $(,)*) => {
         // This starts the parse, giving the initial state of the output
         // (i.e. empty).  Note that the commands come after the semicolon.
-        define_config_directives! { @parse {}, (args){}; $({$($cmd)*},)* }
+        define_config_directives! { @parse {}, (args){}, {}, {}, {}; $({$($cmd)*},)* }
     };
 
     // Termination rule: no more input.
@@ -39,13 +39,94 @@ macro_rules! define_config_directives {
         // $pout will be the body of the `parse_line` match.
         // We pass `args` explicitly to make sure all stages are using the
         // *same* `args` (due to identifier hygiene).
-        ($args:ident){$($pout:tt)*};
+        ($args:ident){$($pout:tt)*},
+        // This is the match statement for the name of the command
+        {$($commandname_out:tt)*},
+        //$argsout is the implementation of the required_arg_values method
+        {$($argsout:tt)*},
+        //$oargsout is the implementation of the optional_arg_values method
+        {$($oargsout:tt)*};
         // See, nothing here?
     ) => {
         #[derive(PartialEq, Eq, Debug, Clone)]
         pub enum ConfigDirective {
             $($eout)*
                 ServerBridge(ServerBridgeArg),
+        }
+
+        impl ConfigDirective {
+            fn required_arg_values(&self) -> Vec<String> {
+                match self {
+                    $($argsout)*
+                        &ConfigDirective::ServerBridge(ServerBridgeArg::NoGateway) => vec!["nogw".to_string()],
+                        &ConfigDirective::ServerBridge(ServerBridgeArg::GatewayConfig{
+                            ref gateway, ref netmask, ref pool_start_ip, ref pool_end_ip
+                        }) => vec![gateway.clone(), netmask.clone(), pool_start_ip.clone(), pool_end_ip.clone()]
+                }
+            }
+            fn optional_arg_values(&self) -> Vec<String> {
+                match self {
+                    $($oargsout)*
+                        &ConfigDirective::ServerBridge(_) => Vec::new(),
+                }
+            }
+            /// The option name this directive was constructed from
+            pub fn openvpn_option_name(&self) -> &str {
+                match self {
+                    $($commandname_out)*
+                        &ConfigDirective::ServerBridge(_) => "server-bridge",
+                }
+            }
+            /// The line this directive would appear as in a config file. For
+            /// directives with inline file contents this will appear as multiple
+            /// lines exactly as in the config file.
+            pub fn as_ovpn_config(&self) -> String {
+                match self {
+                    &ConfigDirective::Ca{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::Cert{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::ExtraCerts{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::Dh{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::Key{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::Pkcs12{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::CrlVerify{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::HttpProxyUserPass{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::TlsAuth{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::TlsCrypt{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    &ConfigDirective::Secret{file: File::InlineFileContents(ref contents), ..} => {
+                        inline_file_contents(self.openvpn_option_name(), contents)
+                    },
+                    _ => format!(
+                        "{} {} {}",
+                        self.openvpn_option_name(),
+                        self.required_arg_values().join(" "),
+                        self.optional_arg_values().join(" ")
+                        )
+                }
+            }
+        }
+
+        fn inline_file_contents(option_name: &str, contents: &str) -> String {
+            return format!("<{}>\n{}\n</{}>", option_name, contents, option_name);
         }
 
         pub fn parse_line(command: &str, $args: &[&str]) -> LineParseResult {
@@ -66,11 +147,12 @@ macro_rules! define_config_directives {
                 _ => LineParseResult::NoMatchingCommand
             }
         }
+
     };
 
     // Rule for command with no arguments.
     (
-        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*}, {$($commandname_out:tt)*}, {$($argsout:tt)*}, {$($oargsout:tt)*};
         {
             command: $sname:expr,
             rust_name: $rname:ident,
@@ -88,6 +170,18 @@ macro_rules! define_config_directives {
             ($pargs){
                 $($pout)*
                     $sname => LineParseResult::Success(ConfigDirective::$rname),
+            },
+            {
+                $($commandname_out)*
+                    &ConfigDirective::$rname => $sname,
+            },
+            {
+                $($argsout)*
+                    &ConfigDirective::$rname => Vec::new(),
+            },
+            {
+                $($oargsout)*
+                    &ConfigDirective::$rname => Vec::new(),
             };
             $($tail)*
         }
@@ -95,7 +189,7 @@ macro_rules! define_config_directives {
 
     // Rule for other commands.
     (
-        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*}, {$($commandname_out:tt)*}, {$($argsout:tt)*}, {$($oargsout:tt)*};
         {
             command: $sname:expr,
             rust_name: $rname:ident,
@@ -130,13 +224,39 @@ macro_rules! define_config_directives {
                                 $($oargs: $oargs,)*
                         })
                     },
+            },
+            {
+                $($commandname_out)*
+                    &ConfigDirective::$rname{..} => $sname,
+            },
+            {
+                $($argsout)*
+                    &ConfigDirective::$rname{$(ref $args,)*..} => {
+                        if define_config_directives!(@count $($args),*) == 0 {
+                            return Vec::new();
+                        }
+                        let mut _result = Vec::new();
+                        $(_result.push($args.clone());)*
+                            return _result
+                    },
+            },
+            {
+                $($oargsout)*
+                    &ConfigDirective::$rname{$(ref $oargs,)* ..} => {
+                        if define_config_directives!(@count $($oargs),*) == 0 {
+                            return Vec::new();
+                        }
+                        let mut _result = Vec::new();
+                        $(if let &Some(ref thing) = $oargs { _result.push(thing.clone())})*
+                            return _result
+                    },
             };
             $($tail)*
         }
     };
     // Rule for varargs commands.
     (
-        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*}, {$($commandname_out:tt)*}, {$($argsout:tt)*}, {$($oargsout:tt)*};
         {
             command: $sname:expr,
             rust_name: $rname:ident,
@@ -160,13 +280,29 @@ macro_rules! define_config_directives {
                             $argname: $pargs.iter().map(|s| s.to_string()).collect(),
                         })
                     },
+            },
+            {
+                $($commandname_out)*
+                    &ConfigDirective::$rname{..} => $sname,
+            },
+            {
+                $($argsout)*
+                    &ConfigDirective::$rname{ref $argname} => {
+                        return $argname.clone()
+                    },
+            },
+            {
+                $($oargsout)*
+                    &ConfigDirective::$rname{..} => {
+                        return Vec::new()
+                    },
             };
             $($tail)*
         }
     };
     // Rule for optional varargs commands.
     (
-        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*}, {$($commandname_out:tt)*}, {$($argsout:tt)*}, {$($oargsout:tt)*};
         {
             command: $sname:expr,
             rust_name: $rname:ident,
@@ -192,13 +328,32 @@ macro_rules! define_config_directives {
                             $argname: None,
                         })
                     },
+            },
+            {
+                $($commandname_out)*
+                    &ConfigDirective::$rname{..} => $sname,
+            },
+            {
+                $($argsout)*
+                    &ConfigDirective::$rname{..} => {
+                        return Vec::new()
+                    },
+            },
+            {
+                $($oargsout)*
+                    &ConfigDirective::$rname{ref $argname} => {
+                        if let &Some(ref args) = $argname {
+                            return args.clone()
+                        }
+                        return Vec::new()
+                    },
             };
             $($tail)*
         }
     };
     // Rule for inline file commands.
     (
-        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*}, {$($commandname_out:tt)*}, {$($argsout:tt)*}, {$($oargsout:tt)*};
         {
             command: $sname:expr,
             rust_name: $rname:ident,
@@ -223,13 +378,32 @@ macro_rules! define_config_directives {
                             })
                         }
                     },
+            },
+            {
+                $($commandname_out)*
+                    &ConfigDirective::$rname{..} => $sname,
+            },
+            {
+                $($argsout)*
+                    &ConfigDirective::$rname{file: File::FilePath(ref path)} => {
+                        return vec!(path.clone())
+                    },
+                    &ConfigDirective::$rname{file: File::InlineFileContents(_)} => {
+                        return Vec::new()
+                    },
+            },
+            {
+                $($oargsout)*
+                    &ConfigDirective::$rname{..} => {
+                        return Vec::new()
+                    },
             };
             $($tail)*
         }
     };
     //Rule for inline file with optional arguments
     (
-        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*};
+        @parse {$($eout:tt)*}, ($pargs:ident){$($pout:tt)*}, {$($commandname_out:tt)*}, {$($argsout:tt)*}, {$($oargsout:tt)*};
         {
             command: $sname:expr,
             rust_name: $rname:ident,
@@ -260,6 +434,30 @@ macro_rules! define_config_directives {
                                 $($oargs: $oargs,)*
                             })
                         }
+                    },
+            },
+            {
+                $($commandname_out)*
+                    &ConfigDirective::$rname{..} => $sname,
+            },
+            {
+                $($argsout)*
+                    &ConfigDirective::$rname{file: File::FilePath(ref path), ..} => {
+                        return vec!(path.clone())
+                    },
+                    &ConfigDirective::$rname{file: File::InlineFileContents(..), ..} => {
+                        return Vec::new()
+                    },
+            },
+            {
+                $($oargsout)*
+                    &ConfigDirective::$rname{$(ref $oargs,)* ..} => {
+                        if define_config_directives!(@count $($oargs),*) == 0 {
+                            return Vec::new();
+                        }
+                        let mut _result = Vec::new();
+                        $(if let &Some(ref thing) = $oargs { _result.push(thing.clone()) })*
+                            return Vec::new()
                     },
             };
             $($tail)*
@@ -533,4 +731,18 @@ define_config_directives!{
     {command: "ifconfig-ipv6-pool", rust_name: IfconfigIpv6Pool, args: [ipv6addr], optional_args: []},
     {command: "ifconfig-ipv6-push", rust_name: IfconfigIpv6Push, args: [ipv6addr, ipv6remote], optional_args: []},
     {command: "iroute-ipv6", rust_name: IrouteIpv6, args: [ipv6addr], optional_args: []},
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_ovpn_name() {
+        let directive = ConfigDirective::Remote{host: "somehost".to_string(), port: Some("someport".to_string()), proto: None};
+        assert_eq!(directive.openvpn_option_name(), "remote");
+        assert_eq!(directive.as_ovpn_config(), "remote somehost someport");
+
+        let directive2 = ConfigDirective::Ca{file: File::InlineFileContents("line1\nline2".to_string())};
+        assert_eq!(directive2.as_ovpn_config(), "<ca>\nline1\nline2\n</ca>".to_string())
+    }
 }
