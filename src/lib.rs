@@ -110,7 +110,7 @@
 //! # Server Bridge
 //! The `--server-bridge` argument is special, it can take two forms
 //!
-//! ```rust
+//! ```text
 //! server-bridge gateway netmask pool-start-IP pool-end-IP
 //! server-bridge nogw
 //! ```
